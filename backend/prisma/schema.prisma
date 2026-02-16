@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String
+  avatarStyle  String?
+  createdAt    DateTime @default(now())
+
+  devices              Device[]
+  conversationMembers  ConversationParticipants[]
+  messagesSent         Message[]
+  reactions            Reaction[]
+  invites              Invite[]
+
+  connectionsSent      Connection[] @relation("UserAConnections")
+  connectionsReceived  Connection[] @relation("UserBConnections")
+  receivedHiddenPayloads HiddenPayload[] @relation("RecipientHidden")
+
+}
+
+
+model Device {
+  id String @id @default(uuid())
+  userId String
+  publicKey String
+  status String @default("active")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields :[userId] , references :[id])
+  hiddenPayloads HiddenPayload[]
+}
+
+model Conversation {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  type String @default("direct") // "direct" or "group" 
+
+  participants ConversationParticipants[]
+  messages Message[]
+}
+
+model ConversationParticipants {
+  id String @id @default(uuid())
+  conversationId String
+  userId String
+
+  joinedAt DateTime @default(now())
+  leftAt   DateTime?
+
+  conversation Conversation @relation(fields : [conversationId] , references : [id])
+  user User @relation(fields : [userId] , references : [id]) 
+
+  @@unique([conversationId,userId,joinedAt])
+  @@index([userId])
+  @@index([conversationId])
+}
+
+model Message {
+  id String @id @default(uuid())
+  conversationId String
+  senderId String
+
+  visibleText String
+  deletedForBoth Boolean @default(false)
+  createdAt DateTime @default(now())
+  deleteWindowExpiry DateTime?
+
+  conversation Conversation @relation(fields : [conversationId] , references : [id])
+  sender User @relation(fields : [senderId] , references : [id])
+
+
+  hiddenPayloads HiddenPayload[]
+  reactions Reaction[]
+}
+
+model HiddenPayload {
+  id String @id @default(uuid())
+  messageId String 
+  deviceId String
+  receipientUserId String
+  encrypted String
+  
+
+  message Message @relation(fields : [messageId] , references : [id])
+  device Device @relation(fields : [deviceId] , references : [id])
+  recepient User @relation("RecipientHidden" , fields : [receipientUserId] , references : [id])
+
+  @@index([receipientUserId , messageId])
+}
+
+model Reaction {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+
+  layerType String   // "visible" or "hidden"
+  type      String   // emoji type
+
+  message   Message  @relation(fields: [messageId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([messageId, userId, layerType])
+}
+
+model Connection {
+  id        String   @id @default(uuid())
+  userAId   String
+  userBId   String
+  status    String   @default("pending") // pending | accepted | blocked
+  createdAt DateTime @default(now())
+
+  userA     User     @relation("UserAConnections", fields: [userAId], references: [id])
+  userB     User     @relation("UserBConnections", fields: [userBId], references: [id])
+
+  @@unique([userAId, userBId])
+}
+
+model Invite {
+  id              String   @id @default(uuid())
+  createdByUserId String
+  inviteCode      String   @unique
+  expiresAt       DateTime?
+  usedByUserId    String?
+  createdAt       DateTime @default(now())
+
+  createdBy User  @relation(fields: [createdByUserId], references: [id])
+}
+
+
+

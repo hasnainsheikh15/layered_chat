@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "ConversationParticipants" ADD COLUMN     "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "leftAt" TIMESTAMP(3);
