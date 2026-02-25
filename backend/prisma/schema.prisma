@@ -42,6 +42,7 @@ model Conversation {
   id String @id @default(uuid())
   createdAt DateTime @default(now())
   type String @default("direct") // "direct" or "group" 
+  pairKey String?  @unique
 
   participants ConversationParticipants[]
   messages Message[]

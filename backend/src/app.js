@@ -4,6 +4,7 @@ import errorHandler from './middleware/error.middleware.js';
 import authRouter from './modules/auth/auth.routes.js';
 import connectionRoute from './modules/connections/connections.routes.js';
 import { verifyJwt } from './middleware/auth.middleware.js';
+import conversationRoute from './modules/conversations/conversations.routes.js';
 
 
 const app = express();
@@ -29,6 +30,7 @@ app.get('/me', verifyJwt, (req, res) => {
 
 app.use('/auth',authRouter)
 app.use('/connections',connectionRoute)
+app.use('/conversations',conversationRoute)
 
 app.use(errorHandler)
 export default app;
