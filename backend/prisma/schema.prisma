@@ -68,7 +68,6 @@ model Message {
   id String @id @default(uuid())
   conversationId String
   senderId String
-
   visibleText String
   deletedForBoth Boolean @default(false)
   createdAt DateTime @default(now())
@@ -86,15 +85,15 @@ model HiddenPayload {
   id String @id @default(uuid())
   messageId String 
   deviceId String
-  receipientUserId String
+  recipientUserId String
   encrypted String
   
 
   message Message @relation(fields : [messageId] , references : [id])
   device Device @relation(fields : [deviceId] , references : [id])
-  recepient User @relation("RecipientHidden" , fields : [receipientUserId] , references : [id])
+  recepient User @relation("RecipientHidden" , fields : [recipientUserId] , references : [id])
 
-  @@index([receipientUserId , messageId])
+  @@index([recipientUserId , messageId])
 }
 
 model Reaction {

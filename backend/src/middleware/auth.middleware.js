@@ -16,7 +16,7 @@ import { verifyToken } from "../utils/jwt.js";
             const token = authHeader.split(' ')[1];
         
             const decoded = verifyToken(token);
-            console.log(decoded)
+            // console.log(decoded)
         
             const user = await prisma.user.findUnique({
                 where : {id : decoded.userId}

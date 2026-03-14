@@ -5,6 +5,7 @@ import authRouter from './modules/auth/auth.routes.js';
 import connectionRoute from './modules/connections/connections.routes.js';
 import { verifyJwt } from './middleware/auth.middleware.js';
 import conversationRoute from './modules/conversations/conversations.routes.js';
+import { messageRoute } from './modules/messages/message.routes.js';
 
 
 const app = express();
@@ -21,16 +22,17 @@ app.use(express.json());
 // })
 
 
-app.get('/me', verifyJwt, (req, res) => {
-  res.json({
-    user: req.user,
-    device: req.device
-  });
-});
+// app.get('/me', verifyJwt, (req, res) => {
+//   res.json({
+//     user: req.user,
+//     device: req.device
+//   });
+// });
 
 app.use('/auth',authRouter)
 app.use('/connections',connectionRoute)
 app.use('/conversations',conversationRoute)
+app.use('/messages',messageRoute)
 
 app.use(errorHandler)
 export default app;
