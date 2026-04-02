@@ -18,15 +18,23 @@ export const send = asyncHandler(async(req,res) => {
 })
 
 export const getMessages = asyncHandler(async(req,res) => {
-    const {conversationId} = req.params;
+    const {conversationId,cursor,limit} = req.query;
     
     if(!conversationId) {
         throw new ApiError(400,"Conversation Id is required")
     }
 
-    const message = await fetchMessage(req.user.id , conversationId)
+    const message = await fetchMessage(req.user.id , req.device.id, conversationId , cursor || null , limit ? parseInt(limit) : 20  )
 
     return res.status(200).json(
         new ApiResponse(201,message,"Message fetched succefully")
+    )
+})
+
+export const unlockHiddenMessage = asyncHandler(async(req,res) => {
+    const data = await  fetchHiddenPayload(req.user.id , req.device.id , req.params.messageId)
+
+    res.status(200).json(
+        new ApiResponse(200,data,"Message unlocked")
     )
 })
