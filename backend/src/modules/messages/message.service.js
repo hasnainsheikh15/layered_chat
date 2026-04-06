@@ -157,6 +157,13 @@ export const fetchMessage = async (userId,deviceId, conversationId, cursor, limi
 
     })
 
+    await prisma.conversationParticipants.update({
+        where : {id : membership.id},
+        data : {
+            lastReadAt : new Date()
+        }
+    })
+
     return {messages : reformed , nextCursor}
 }
 
@@ -195,4 +202,77 @@ export const fetchHiddenPayload = async (userId, messageId, deviceId) => {
     return {
         encrypted: payload.encrypted
     }
+}
+
+export const getConversations = async (userId) => {
+    const conversations = await prisma.conversation.findMany({
+        where : {
+            participants : {
+                some : {
+                    userId : userId
+                }
+            }
+        }
+        ,
+         include : {
+            participants : {
+                include : {
+                    user : true
+                }
+            },
+            messages : {
+                orderBy : {createdAt : 'desc'},
+                take : 1
+            }
+         },
+          orderBy : {
+            createdAt : 'desc'
+          }
+    })
+
+    const result = conversations.map(convo => {
+        const lastMessage  = convo.messages[0]
+
+        // if direct user 
+        let otherUser = null;
+
+        if(convo.type === 'direct') {
+            const participant = convo.participants.find(p => p.userId !== userId)
+
+            otherUser = participant ?  {
+                id : participant.user.id,
+                username : participant.user.username
+            } : null
+        }
+
+        // if the group chat 
+
+        let otherUsers = []
+
+        if(convo.type === 'group') {
+            otherUsers = convo.participants.filter(p => p.userId !== userId).map(
+                p => ({
+                    id : p.user.id,
+                    username : p.user.username
+                })
+            )
+        }
+
+        return {
+        id : convo.id,
+        type : convo.type,
+
+        otherUser,
+        otherUsers,
+
+        lastMessage : lastMessage ? {
+            text : lastMessage.visibleText,
+            createdAt : lastMessage.createdAt
+        } : null
+    }
+    })
+
+    
+    return result;
+    
 }
