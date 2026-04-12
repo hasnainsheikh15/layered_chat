@@ -23,7 +23,7 @@ model User {
   connectionsSent      Connection[] @relation("UserAConnections")
   connectionsReceived  Connection[] @relation("UserBConnections")
   receivedHiddenPayloads HiddenPayload[] @relation("RecipientHidden")
-
+  deletion MessageDeletion[]
 }
 
 
@@ -56,6 +56,7 @@ model ConversationParticipants {
   joinedAt DateTime @default(now())
   leftAt   DateTime?
   lastReadAt DateTime?
+  unreadCount Int @default(0)
 
   conversation Conversation @relation(fields : [conversationId] , references : [id])
   user User @relation(fields : [userId] , references : [id]) 
@@ -80,6 +81,18 @@ model Message {
 
   hiddenPayloads HiddenPayload[]
   reactions Reaction[]
+  deletion MessageDeletion[]
+}
+
+model MessageDeletion {
+  id String @id @default(uuid())
+  messageId String
+  userId String
+
+  message Message @relation(fields : [messageId] , references : [id])
+  user User @relation(fields : [userId] , references : [id])
+
+  @@unique([messageId , userId])
 }
 
 model HiddenPayload {

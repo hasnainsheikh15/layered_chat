@@ -87,6 +87,16 @@ export const sendMessage = async (userId, conversationId, content, hidden) => {
         await prisma.hiddenPayload.createMany({
             data: payload
         })
+
+        await prisma.conversationParticipants.updateMany({
+            where : {
+                conversationId,
+                userId : {not : userId}
+            },
+            data : {
+                unreadCount : {increment : 1}
+            }
+        })
     }
 
     return message;
@@ -119,6 +129,11 @@ export const fetchMessage = async (userId,deviceId, conversationId, cursor, limi
             createdAt: {
                 gte: joinedAt,
                 ...(leftAt && { lt: leftAt })
+            },
+            messageDeletion : {
+                none : {
+                    userId : userId
+                }
             }
 
         }, take: limit,
@@ -144,13 +159,24 @@ export const fetchMessage = async (userId,deviceId, conversationId, cursor, limi
     const ordered = [...messages].reverse()
 
     const reformed = ordered.map(message => {
+
+        if (message.deletedForBoth) {
+      return {
+        id: message.id,
+        conversationId: message.conversationId,
+        senderId: message.senderId,
+        visibleText: "This message was deleted",
+        createdAt: message.createdAt,
+        hasHidden: false
+      };
+    }
         const hidden = message.hiddenPayloads[0]
 
         return {
             id: message.id,
             conversationId: message.conversationId,
             senderId: message.senderId,
-            visibleText: message.visibleText,
+            visibleText: message.deletedForBoth ? "This message was deleted" : message.visibleText,
             createdAt: message.createdAt,
             hasHidden: !!hidden
         }
@@ -160,7 +186,8 @@ export const fetchMessage = async (userId,deviceId, conversationId, cursor, limi
     await prisma.conversationParticipants.update({
         where : {id : membership.id},
         data : {
-            lastReadAt : new Date()
+            lastReadAt : new Date(),
+            unreadCount : 0
         }
     })
 
@@ -258,6 +285,9 @@ export const getConversations = async (userId) => {
             )
         }
 
+        const selfParticipant = convo.participants.find(p => p.userId === userId)
+
+
         return {
         id : convo.id,
         type : convo.type,
@@ -268,7 +298,9 @@ export const getConversations = async (userId) => {
         lastMessage : lastMessage ? {
             text : lastMessage.visibleText,
             createdAt : lastMessage.createdAt
-        } : null
+        } : null ,
+
+        unreadCount : selfParticipant?.unreadCount || 0
     }
     })
 
@@ -276,3 +308,111 @@ export const getConversations = async (userId) => {
     return result;
     
 }
+
+
+export const deleteMessage = async (userId , messageId) => {
+    const message = await prisma.message.findUnique({
+        where : {id : messageId}
+    })
+
+    if(!message) {
+        throw new ApiError(404,"Message not found")
+    }
+
+    if(message.senderId !== userId) {
+        throw new ApiError(403,"Not allowed to delete the message")
+    }
+
+    if(message.deleteWindowExpiry && message.deleteWindowExpiry < new Date()) {
+        throw new ApiError(400,"Delete Window Expired")
+    }
+
+    await prisma.message.update({
+        where  : {id : messageId},
+        data : {
+            deletedForBoth : true,
+            visibleText : "This message was deleted"
+        }
+    })
+
+    return {success : true}
+}
+
+export const deleteForMe = async (userId,messageId) => {
+    const message = await prisma.message.findUnique({
+        where : {id : messageId}
+    })
+
+    if(!message) {
+        throw new ApiError(404,"Message not found")
+    }
+
+    const membership = await prisma.conversationParticipants.findFirst({
+        where : {
+            conversationId : message.conversationId,
+            userId
+        }
+    })
+
+    if(!membership) {
+        throw new ApiError(403,"Not a participant")
+    }
+
+    const existing = await prisma.messageDeletion.findUnique({
+        where : {
+            messageId_userId : {
+                messageId,
+                userId
+            }
+        }
+    })
+
+    if(existing) {
+        return {success : true}
+    }
+
+    await prisma.messageDeletion.create({
+        data : {
+            messageId,
+            userId
+        }
+    })
+
+    return {sucess : true}
+}
+
+export const editMessage = async (userId , messageId , newText) => {
+
+    if(!newText && newText.trim().length === 0) {
+        throw new ApiError(400, "Message cannot be empty");
+    }
+    const message = await prisma.message.findUnique({
+        where : {id : messageId}
+    })
+
+    if(!message) {
+        throw new ApiError(404,"Message was not found")
+    }
+
+    if(message.senderId !== userId) {
+        throw new ApiError(403,"Not allowed")
+    }
+
+    if(message.deleteWindowExpiry && message.deleteWindowExpiry < new Date()) {
+        throw new ApiError(400,"Window Expired")
+    }
+
+    if(message.deletedForBoth) {
+        throw new ApiError(403,"Cannot edit deleted message")
+    }
+
+    const updated = await prisma.message.update({
+        where  : {id : messageId},
+        data : {
+            visibleText : newText
+        }
+    })
+
+    return updated;
+}
+

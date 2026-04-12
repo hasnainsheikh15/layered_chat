@@ -3,7 +3,7 @@ import cors from 'cors';
 import errorHandler from './middleware/error.middleware.js';
 import authRouter from './modules/auth/auth.routes.js';
 import connectionRoute from './modules/connections/connections.routes.js';
-import { verifyJwt } from './middleware/auth.middleware.js';
+// import { verifyJwt } from './middleware/auth.middleware.js';
 import conversationRoute from './modules/conversations/conversations.routes.js';
 import { messageRoute } from './modules/messages/message.routes.js';
 
@@ -13,13 +13,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// app.get('/', (req,res) => {
-//     res.status(200).json(
-//         {
-//             message : "Server is running"
-//         }
-//     )
-// })
+app.get('/', (req,res) => {
+    res.status(200).json(
+        {
+            message : "Server is running"
+        }
+    )
+})
 
 
 // app.get('/me', verifyJwt, (req, res) => {
