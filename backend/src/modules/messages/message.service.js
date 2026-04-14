@@ -89,20 +89,28 @@ export const sendMessage = async (userId, conversationId, content, hidden) => {
         })
 
         await prisma.conversationParticipants.updateMany({
-            where : {
+            where: {
                 conversationId,
-                userId : {not : userId}
+                userId: { not: userId }
             },
-            data : {
-                unreadCount : {increment : 1}
+            data: {
+                unreadCount: { increment: 1 }
             }
         })
+
+        await prisma.conversation.update({
+            where: { id: conversationId },
+            data: {
+                updatedAt: new Date()
+            }
+        });
+
     }
 
     return message;
 }
 
-export const fetchMessage = async (userId,deviceId, conversationId, cursor, limit = 20) => {
+export const fetchMessage = async (userId, deviceId, conversationId, cursor, limit = 20) => {
     // console.log(userId)
     // console.log(conversationId)
     const membership = await prisma.conversationParticipants.findFirst({
@@ -130,20 +138,20 @@ export const fetchMessage = async (userId,deviceId, conversationId, cursor, limi
                 gte: joinedAt,
                 ...(leftAt && { lt: leftAt })
             },
-            messageDeletion : {
-                none : {
-                    userId : userId
+            deletion: {
+                none: {
+                    userId: userId
                 }
             }
 
         }, take: limit,
-        ...(cursor && {cursor : {id : cursor},skip : 1}),
+        ...(cursor && { cursor: { id: cursor }, skip: 1 }),
 
         include: {
             hiddenPayloads: {
                 where: {
                     recipientUserId: userId,
-                    device : deviceId
+                    deviceId : deviceId
                 },
                 select: {
                     encrypted: true
@@ -154,22 +162,22 @@ export const fetchMessage = async (userId,deviceId, conversationId, cursor, limi
             createdAt: 'desc'
         }
     })
-    
+
     const nextCursor = messages.length ? messages[messages.length - 1].id : null
     const ordered = [...messages].reverse()
 
     const reformed = ordered.map(message => {
 
         if (message.deletedForBoth) {
-      return {
-        id: message.id,
-        conversationId: message.conversationId,
-        senderId: message.senderId,
-        visibleText: "This message was deleted",
-        createdAt: message.createdAt,
-        hasHidden: false
-      };
-    }
+            return {
+                id: message.id,
+                conversationId: message.conversationId,
+                senderId: message.senderId,
+                visibleText: "This message was deleted",
+                createdAt: message.createdAt,
+                hasHidden: false
+            };
+        }
         const hidden = message.hiddenPayloads[0]
 
         return {
@@ -184,14 +192,14 @@ export const fetchMessage = async (userId,deviceId, conversationId, cursor, limi
     })
 
     await prisma.conversationParticipants.update({
-        where : {id : membership.id},
-        data : {
-            lastReadAt : new Date(),
-            unreadCount : 0
+        where: { id: membership.id },
+        data: {
+            lastReadAt: new Date(),
+            unreadCount: 0
         }
     })
 
-    return {messages : reformed , nextCursor}
+    return { messages: reformed, nextCursor }
 }
 
 export const fetchHiddenPayload = async (userId, messageId, deviceId) => {
@@ -231,185 +239,109 @@ export const fetchHiddenPayload = async (userId, messageId, deviceId) => {
     }
 }
 
-export const getConversations = async (userId) => {
-    const conversations = await prisma.conversation.findMany({
-        where : {
-            participants : {
-                some : {
-                    userId : userId
-                }
-            }
-        }
-        ,
-         include : {
-            participants : {
-                include : {
-                    user : true
-                }
-            },
-            messages : {
-                orderBy : {createdAt : 'desc'},
-                take : 1
-            }
-         },
-          orderBy : {
-            createdAt : 'desc'
-          }
-    })
-
-    const result = conversations.map(convo => {
-        const lastMessage  = convo.messages[0]
-
-        // if direct user 
-        let otherUser = null;
-
-        if(convo.type === 'direct') {
-            const participant = convo.participants.find(p => p.userId !== userId)
-
-            otherUser = participant ?  {
-                id : participant.user.id,
-                username : participant.user.username
-            } : null
-        }
-
-        // if the group chat 
-
-        let otherUsers = []
-
-        if(convo.type === 'group') {
-            otherUsers = convo.participants.filter(p => p.userId !== userId).map(
-                p => ({
-                    id : p.user.id,
-                    username : p.user.username
-                })
-            )
-        }
-
-        const selfParticipant = convo.participants.find(p => p.userId === userId)
 
 
-        return {
-        id : convo.id,
-        type : convo.type,
 
-        otherUser,
-        otherUsers,
-
-        lastMessage : lastMessage ? {
-            text : lastMessage.visibleText,
-            createdAt : lastMessage.createdAt
-        } : null ,
-
-        unreadCount : selfParticipant?.unreadCount || 0
-    }
-    })
-
-    
-    return result;
-    
-}
-
-
-export const deleteMessage = async (userId , messageId) => {
+export const deleteMessage = async (userId, messageId) => {
     const message = await prisma.message.findUnique({
-        where : {id : messageId}
+        where: { id: messageId }
     })
 
-    if(!message) {
-        throw new ApiError(404,"Message not found")
+    if (!message) {
+        throw new ApiError(404, "Message not found")
     }
 
-    if(message.senderId !== userId) {
-        throw new ApiError(403,"Not allowed to delete the message")
+    if (message.senderId !== userId) {
+        throw new ApiError(403, "Not allowed to delete the message")
     }
 
-    if(message.deleteWindowExpiry && message.deleteWindowExpiry < new Date()) {
-        throw new ApiError(400,"Delete Window Expired")
+    if (message.deleteWindowExpiry && message.deleteWindowExpiry < new Date()) {
+        throw new ApiError(400, "Delete Window Expired")
     }
 
     await prisma.message.update({
-        where  : {id : messageId},
-        data : {
-            deletedForBoth : true,
-            visibleText : "This message was deleted"
+        where: { id: messageId },
+        data: {
+            deletedForBoth: true,
+            visibleText: "This message was deleted"
         }
     })
 
-    return {success : true}
+    return { success: true }
 }
 
-export const deleteForMe = async (userId,messageId) => {
+export const deleteForMe = async (userId, messageId) => {
     const message = await prisma.message.findUnique({
-        where : {id : messageId}
+        where: { id: messageId }
     })
 
-    if(!message) {
-        throw new ApiError(404,"Message not found")
+    if (!message) {
+        throw new ApiError(404, "Message not found")
     }
 
     const membership = await prisma.conversationParticipants.findFirst({
-        where : {
-            conversationId : message.conversationId,
+        where: {
+            conversationId: message.conversationId,
             userId
         }
     })
 
-    if(!membership) {
-        throw new ApiError(403,"Not a participant")
+    if (!membership) {
+        throw new ApiError(403, "Not a participant")
     }
 
     const existing = await prisma.messageDeletion.findUnique({
-        where : {
-            messageId_userId : {
+        where: {
+            messageId_userId: {
                 messageId,
                 userId
             }
         }
     })
 
-    if(existing) {
-        return {success : true}
+    if (existing) {
+        return { success: true }
     }
 
     await prisma.messageDeletion.create({
-        data : {
+        data: {
             messageId,
             userId
         }
     })
 
-    return {sucess : true}
+    return { sucess: true }
 }
 
-export const editMessage = async (userId , messageId , newText) => {
+export const editMessage = async (userId, messageId, newText) => {
 
-    if(!newText && newText.trim().length === 0) {
+    if (!newText && newText.trim().length === 0) {
         throw new ApiError(400, "Message cannot be empty");
     }
     const message = await prisma.message.findUnique({
-        where : {id : messageId}
+        where: { id: messageId }
     })
 
-    if(!message) {
-        throw new ApiError(404,"Message was not found")
+    if (!message) {
+        throw new ApiError(404, "Message was not found")
     }
 
-    if(message.senderId !== userId) {
-        throw new ApiError(403,"Not allowed")
+    if (message.senderId !== userId) {
+        throw new ApiError(403, "Not allowed")
     }
 
-    if(message.deleteWindowExpiry && message.deleteWindowExpiry < new Date()) {
-        throw new ApiError(400,"Window Expired")
+    if (message.deleteWindowExpiry && message.deleteWindowExpiry < new Date()) {
+        throw new ApiError(400, "Window Expired")
     }
 
-    if(message.deletedForBoth) {
-        throw new ApiError(403,"Cannot edit deleted message")
+    if (message.deletedForBoth) {
+        throw new ApiError(403, "Cannot edit deleted message")
     }
 
     const updated = await prisma.message.update({
-        where  : {id : messageId},
-        data : {
-            visibleText : newText
+        where: { id: messageId },
+        data: {
+            visibleText: newText
         }
     })
 

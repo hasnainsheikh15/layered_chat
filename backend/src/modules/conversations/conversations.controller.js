@@ -1,7 +1,7 @@
 import ApiError from "../../utils/apiError.js";
 import ApiResponse from "../../utils/apiResponse.js";
 import asyncHandler from "../../utils/asyncHandler.js";
-import { createOrGetConversations } from "./conversations.service.js";
+import { createOrGetConversations, getConversations } from "./conversations.service.js";
 
 export const createDirect = asyncHandler(async (req,res) => {
     const {targetUserId} = req.body;
@@ -18,3 +18,15 @@ export const createDirect = asyncHandler(async (req,res) => {
         },"Conversation ready")
     )
 })
+
+
+
+export const getUserConversations = asyncHandler(async (req, res) => {
+  const userId = req.user.userId;
+
+  const conversations = await getConversations(userId);
+
+  return res.status(200).json(
+    new ApiResponse(200, conversations, "Fetched conversations")
+  );
+});
