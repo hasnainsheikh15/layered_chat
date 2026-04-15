@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 230 25% 7%;
+    --foreground: 220 20% 92%;
+
+    --card: 230 20% 11%;
+    --card-foreground: 220 20% 92%;
+
+    --popover: 230 20% 11%;
+    --popover-foreground: 220 20% 92%;
+
+    --primary: 265 90% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 230 20% 16%;
+    --secondary-foreground: 220 20% 85%;
+
+    --muted: 230 15% 18%;
+    --muted-foreground: 220 10% 55%;
+
+    --accent: 200 95% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 230 15% 18%;
+    --input: 230 15% 15%;
+    --ring: 265 90% 65%;
+
+    --radius: 1rem;
+
+    /* Custom tokens */
+    --neon-purple: 265 90% 65%;
+    --neon-blue: 200 95% 55%;
+    --neon-pink: 330 90% 65%;
+    --glass: 230 20% 14%;
+    --glass-border: 230 15% 22%;
+    --gradient-sent: linear-gradient(135deg, hsl(265 90% 55%), hsl(200 95% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(265 90% 65%), hsl(330 90% 65%));
+    --gradient-sidebar-active: linear-gradient(135deg, hsl(265 90% 55% / 0.2), hsl(200 95% 55% / 0.15));
+    --glow-purple: 0 0 20px hsl(265 90% 65% / 0.3);
+    --glow-blue: 0 0 15px hsl(200 95% 55% / 0.25);
+    --glow-input: 0 0 12px hsl(265 90% 65% / 0.2);
+
+    --sidebar-background: 230 22% 9%;
+    --sidebar-foreground: 220 20% 85%;
+    --sidebar-primary: 265 90% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 230 20% 16%;
+    --sidebar-accent-foreground: 220 20% 92%;
+    --sidebar-border: 230 15% 18%;
+    --sidebar-ring: 265 90% 65%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background: hsl(var(--glass) / 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--glass-border) / 0.5);
+  }
+  .glass-panel-strong {
+    background: hsl(var(--glass) / 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid hsl(var(--glass-border) / 0.6);
+  }
+  .gradient-sent {
+    background: var(--gradient-sent);
+  }
+  .gradient-accent {
+    background: var(--gradient-accent);
+  }
+  .glow-purple {
+    box-shadow: var(--glow-purple);
+  }
+  .glow-input {
+    box-shadow: var(--glow-input);
+  }
+  .neon-dot {
+    box-shadow: 0 0 6px hsl(var(--neon-blue)), 0 0 12px hsl(var(--neon-blue) / 0.5);
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 999px;
+  }
+}
+
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+.typing-dot-1 { animation: typing-dot 1.4s infinite 0s; }
+.typing-dot-2 { animation: typing-dot 1.4s infinite 0.2s; }
+.typing-dot-3 { animation: typing-dot 1.4s infinite 0.4s; }
