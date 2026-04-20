@@ -5,12 +5,39 @@ import MessageInput from "./MessageInput";
 import api from "../api/axios";
 import { getSocket } from "../socket/socket";
 import { useAuth } from "../context/AuthContext";
+import MessageBubble from "./MessageBubble.jsx";
 
 function ChatWindow({ conversation }) {
     const { user } = useAuth()
     const scrollRef = useRef(null);
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState(false);
+    const [revealedMessages, setRevealedMessages] = useState({});
+
+    const handleReveal = async (msg) => {
+        try {
+            // already revealed hai?
+            if (revealedMessages[msg.id]) return;
+
+            const res = await api.get(`/messages/${msg.id}/unlock`);
+
+            setRevealedMessages((prev) => ({
+                ...prev,
+                [msg.id]: res.data.data.encrypted
+            }));
+
+            setTimeout(() => {
+                setRevealedMessages((prev) => {
+                    const copy = { ...prev };
+                    delete copy[msg.id];
+                    return copy;
+                });
+            }, 10000);
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     const formatTime = (date) => {
         const d = new Date(date);
@@ -37,14 +64,17 @@ function ChatWindow({ conversation }) {
     }, [messages]);
     useEffect(() => {
         if (!conversation) return;
-
+        scrollRef.current?.scrollTo({
+            top: scrollRef.current.scrollHeight,
+            behavior: "auto",
+        });
         const fetchMessages = async () => {
             try {
                 const res = await api.get(
                     `/messages/${conversation.id}`
                 );
 
-                //   console.log("MESSAGES:", res.data.data);
+                console.log("MESSAGES:", res.data);
 
                 // setMessages(res.data.data.messages || res.data.data);
                 const fetched = res.data.data.messages || [];
@@ -148,35 +178,22 @@ function ChatWindow({ conversation }) {
                 </div>
 
                 {/* MESSAGES */}
-                <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
+                <div
+                    ref={scrollRef}
+                    className="flex-1 overflow-y-auto px-5 py-4 space-y-2 scrollbar-thin">
 
                     {messages.map((msg) => {
                         const isMine = msg.senderId === user?.id;
 
                         return (
-                            <div
+                            <MessageBubble
                                 key={msg.id}
-                                className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-                            >
-                                <div
-                                    className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm shadow-sm
-              ${isMine
-                                            ? "text-white"
-                                            : "bg-white/70 backdrop-blur-md text-gray-800 border border-white/40"
-                                        }`}
-                                    style={
-                                        isMine
-                                            ? { background: "linear-gradient(135deg, #059669, #34d399)" }
-                                            : {}
-                                    }
-                                >
-                                    <p>{msg.visibleText}</p>
-
-                                    <span className="block text-[10px] mt-1 opacity-70">
-                                        {formatTime(msg.createdAt)}
-                                    </span>
-                                </div>
-                            </div>
+                                msg={msg}
+                                isMine={isMine}
+                                revealedMessages={revealedMessages}
+                                onReveal={handleReveal}
+                                formatTime={formatTime}
+                            />
                         );
                     })}
                 </div>
@@ -185,15 +202,16 @@ function ChatWindow({ conversation }) {
 
                 <MessageInput
                     conversationId={conversation.id}
-                    onSend={async (text) => {
+                    onSend={async ({ text, hidden }) => {
                         try {
                             const res = await api.post("/messages", {
                                 conversationId: conversation.id,
                                 content: text,
+                                hidden
                             });
 
                             const newMessage = res.data.data;
-                            setMessages((prev) => [...prev, newMessage]);
+                            // setMessages((prev) => [...prev, newMessage]);
 
                         } catch (err) {
                             console.error(err);

@@ -1,17 +1,19 @@
-import prisma from "../../config/prisma.js"
-import ApiError from "../../utils/apiError.js"
+import prisma from "../../config/prisma.js";
+import ApiError from "../../utils/apiError.js";
+import { getIO } from "../../websocket/socket.js";
 
 export const sendMessage = async (userId, conversationId, content, hidden) => {
+
     if (!content || content.trim().length === 0) {
-        throw new ApiError(400, "Message cannot be empty")
+        throw new ApiError(400, "Message cannot be empty");
     }
 
     const conversation = await prisma.conversation.findUnique({
         where: { id: conversationId }
-    })
+    });
 
     if (!conversation) {
-        throw new ApiError(400, "No conversation exist")
+        throw new ApiError(400, "No conversation exist");
     }
 
     const membership = await prisma.conversationParticipants.findFirst({
@@ -20,11 +22,12 @@ export const sendMessage = async (userId, conversationId, content, hidden) => {
             userId,
             leftAt: null
         }
-    })
+    });
 
     if (!membership) {
-        throw new ApiError(400, "User is not an Active member")
+        throw new ApiError(400, "User is not an Active member");
     }
+
 
     if (conversation.type === 'direct') {
         const otherUser = await prisma.conversationParticipants.findFirst({
@@ -33,10 +36,10 @@ export const sendMessage = async (userId, conversationId, content, hidden) => {
                 userId: { not: userId },
                 leftAt: null
             }
-        })
+        });
 
         if (!otherUser) {
-            throw new ApiError(400, "Other participant not active")
+            throw new ApiError(400, "Other participant not active");
         }
 
         const connection = await prisma.connection.findFirst({
@@ -47,12 +50,13 @@ export const sendMessage = async (userId, conversationId, content, hidden) => {
                     { userAId: otherUser.userId, userBId: userId }
                 ]
             }
-        })
+        });
 
         if (!connection) {
-            throw new ApiError(400, "Connection no longer active")
+            throw new ApiError(400, "Connection no longer active");
         }
     }
+
 
     const message = await prisma.message.create({
         data: {
@@ -60,55 +64,85 @@ export const sendMessage = async (userId, conversationId, content, hidden) => {
             senderId: userId,
             visibleText: content
         }
-    })
+    });
 
-    if (hidden && hidden.EncryptedPayload && hidden.recipientUserIds?.length) {
-        const recipients = [... new Set([
-            userId,
-            ...hidden.recipientUserIds
-        ])]
 
-        const devices = await prisma.device.findMany({
-            where: {
-                userId: { in: recipients },
-                status: "active"
-            }
-        })
+   if (hidden && hidden.EncryptedPayload) {
 
-        const payload = devices.map(device => (
-            {
-                messageId: message.id,
-                deviceId: device.id,
-                recipientUserId: device.userId,
-                encrypted: hidden.EncryptedPayload
-            }
-        ))
+   
+    const participants = await prisma.conversationParticipants.findMany({
+        where: {
+            conversationId,
+            userId: { not: userId }, 
+            leftAt: null
+        }
+    });
 
-        await prisma.hiddenPayload.createMany({
-            data: payload
-        })
+    const recipientIds = participants.map(p => p.userId);
 
-        await prisma.conversationParticipants.updateMany({
-            where: {
-                conversationId,
-                userId: { not: userId }
-            },
-            data: {
-                unreadCount: { increment: 1 }
-            }
-        })
+    // 🔥 ONLY receiver devices
+    const devices = await prisma.device.findMany({
+        where: {
+            userId: { in: recipientIds },
+            status: "active"
+        }
+    });
 
-        await prisma.conversation.update({
-            where: { id: conversationId },
-            data: {
-                updatedAt: new Date()
-            }
+    // 🔥 IMPORTANT: unique per device
+    const payload = devices.map(device => ({
+        messageId: message.id,
+        deviceId: device.id,
+        recipientUserId: device.userId,
+        encrypted: hidden.EncryptedPayload
+    }));
+
+    console.log("FINAL PAYLOAD:", payload);
+
+    await prisma.hiddenPayload.createMany({
+        data: payload
+    });
+}
+
+
+    await prisma.conversationParticipants.updateMany({
+        where: {
+            conversationId,
+            userId: { not: userId }
+        },
+        data: {
+            unreadCount: { increment: 1 }
+        }
+    });
+
+
+    await prisma.conversation.update({
+        where: { id: conversationId },
+        data: {
+            updatedAt: new Date()
+        }
+    });
+
+
+    const io = getIO();
+
+    const participants = await prisma.conversationParticipants.findMany({
+        where: {
+            conversationId,
+            leftAt: null
+        }
+    });
+
+    participants.forEach((p) => {
+        if (p.userId === userId) return;
+
+        io.to(p.userId).emit("unreadUpdate", {
+            conversationId,
+            unreadCount: p.unreadCount
         });
-
-    }
+    });
 
     return message;
-}
+};
 
 export const fetchMessage = async (userId, deviceId, conversationId, cursor, limit = 20) => {
     // console.log(userId)
@@ -151,11 +185,12 @@ export const fetchMessage = async (userId, deviceId, conversationId, cursor, lim
             hiddenPayloads: {
                 where: {
                     recipientUserId: userId,
-                    deviceId : deviceId
+                    deviceId: deviceId
                 },
                 select: {
                     encrypted: true
                 }
+
             }
         },
         orderBy: {
@@ -179,7 +214,7 @@ export const fetchMessage = async (userId, deviceId, conversationId, cursor, lim
             };
         }
         const hidden = message.hiddenPayloads[0]
-
+        console.log(message.id, "HIDDEN PAYLOAD:", hidden)
         return {
             id: message.id,
             conversationId: message.conversationId,
@@ -226,7 +261,8 @@ export const fetchHiddenPayload = async (userId, messageId, deviceId) => {
     const payload = await prisma.hiddenPayload.findFirst({
         where: {
             messageId,
-            deviceId
+            deviceId,
+            recipientUserId : userId
         }
     })
 

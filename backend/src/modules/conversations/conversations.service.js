@@ -75,8 +75,8 @@ export const createOrGetConversations = async (userId , targetUserId) => {
 
 export const getConversations = async (userId) => {
 
-    console.log("\n========== GET CONVERSATIONS ==========");
-    console.log("USER ID:", userId);
+    // console.log("\n========== GET CONVERSATIONS ==========");
+    // console.log("USER ID:", userId);
 
     const conversations = await prisma.conversation.findMany({
         where: {
@@ -103,31 +103,31 @@ export const getConversations = async (userId) => {
         }
     });
 
-    console.log("RAW CONVERSATIONS COUNT:", conversations.length);
+    // console.log("RAW CONVERSATIONS COUNT:", conversations.length);
 
-    conversations.forEach(c => {
-        console.log("CONVO:", c.id);
-        console.log(
-            "Participants:",
-            c.participants.map(p => ({
-                userId: p.userId,
-                username: p.user?.username,
-                leftAt: p.leftAt
-            }))
-        );
-    });
+    // conversations.forEach(c => {
+    //     console.log("CONVO:", c.id);
+    //     console.log(
+    //         "Participants:",
+    //         c.participants.map(p => ({
+    //             userId: p.userId,
+    //             username: p.user?.username,
+    //             leftAt: p.leftAt
+    //         }))
+    //     );
+    // });
 
     // 🔥 SAFETY FILTER (VERY IMPORTANT)
     const filtered = conversations.filter(convo =>
         convo.participants.some(p => p.userId === userId && p.leftAt === null)
     );
 
-    console.log("AFTER FILTER COUNT:", filtered.length);
+    // console.log("AFTER FILTER COUNT:", filtered.length);
 
     const result = filtered.map(convo => {
         const lastMessage = convo.messages[0];
 
-        // 🔥 SAFE OTHER USER
+     
         let otherUser = null;
 
         if (convo.type === 'direct') {
@@ -178,8 +178,8 @@ export const getConversations = async (userId) => {
         };
     });
 
-    console.log("FINAL RESULT:", result);
-    console.log("======================================\n");
+    // console.log("FINAL RESULT:", result);
+    // console.log("======================================\n");
 
     return result;
 };
