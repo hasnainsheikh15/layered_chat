@@ -6,12 +6,18 @@ import connectionRoute from './modules/connections/connections.routes.js';
 // import { verifyJwt } from './middleware/auth.middleware.js';
 import conversationRoute from './modules/conversations/conversations.routes.js';
 import { messageRoute } from './modules/messages/message.routes.js';
+import cookieParser from 'cookie-parser';
 
 
 const app = express();
 
-app.use(cors());
+app.use(cors(
+    {
+    origin : "http://localhost:5173" ,
+    credentials : true
+}));
 app.use(express.json());
+app.use(cookieParser())
 
 app.get('/', (req,res) => {
     res.status(200).json(

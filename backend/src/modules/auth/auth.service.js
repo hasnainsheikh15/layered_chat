@@ -5,7 +5,7 @@ import { comparePassword, hashPasswword } from "../../utils/hash.js";
 import { generateToken } from "../../utils/jwt.js";
 
 
-export const registerUser = async ({username,password,avatarStyle}) => {
+export const registerUser = async ({username,password,publicKey}) => {
     const existingUser = await prisma.user.findUnique({
         where : {username}
     })
@@ -19,17 +19,32 @@ export const registerUser = async ({username,password,avatarStyle}) => {
     const user = await prisma.user.create({
         data : {
             username,
-            passwordHash,
-            avatarStyle
+            passwordHash
         }
     })
 
-    return user;
+    const device = await prisma.device.create({
+        data : {
+            userId : user.id,
+            publicKey
+        }
+    })
+
+    // const token = generateToken({
+    //     userId : user.id,
+    //     deviceId : device.id
+    // })
+
+    return {user,device}
 
 }
 
 
 export const loginUser = async ({username,password,publicKey}) => {
+
+    if(!publicKey) {
+        throw new ApiError(400,"Public key is required for login")
+    }
     const user = await prisma.user.findUnique({
         where : {username}
     }) 
@@ -45,13 +60,22 @@ export const loginUser = async ({username,password,publicKey}) => {
         throw new ApiError(400,"Invalid Password")
     }
 
-    const device = await prisma.device.create({
+    let device = await prisma.device.findFirst({
+        where : {
+           userId : user.id,
+           publicKey : publicKey
+        }
+    })
+    
+    if(!device) {
+        device = await prisma.device.create({
         data : {
             userId : user.id,
             publicKey
         }
     })
-
+    }
+    
     const token =  generateToken({
         userId : user.id,
         deviceId : device.id

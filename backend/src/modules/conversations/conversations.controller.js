@@ -22,7 +22,7 @@ export const createDirect = asyncHandler(async (req,res) => {
 
 
 export const getUserConversations = asyncHandler(async (req, res) => {
-  const userId = req.user.userId;
+  const userId = req.user.id;
 
   const conversations = await getConversations(userId);
 

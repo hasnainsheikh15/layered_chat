@@ -1,6 +1,7 @@
 import {Server} from 'socket.io';
 import ApiError from '../utils/apiError.js';
 import { socketAuth } from './auth.socket.js';
+import prisma from '../config/prisma.js';
 
 let io;
 const onlineUsers  = new Map()
@@ -8,13 +9,21 @@ const onlineUsers  = new Map()
 export const initSocket = (server) => {
     io = new Server(server,{
         cors : {
-            origin : "*"
+            origin : "http://localhost:5173",
+            methods : ["GET","POST"],
+            credentials : true
         }
     })
 
     io.use(socketAuth)
 
     io.on('connection',async (socket)=>{
+
+        if (!socket.user) {
+        console.log("Unauthorized socket blocked");
+        socket.disconnect(); 
+        return;
+    }
         const userId = socket.user.userId
         socket.join(userId)
 
@@ -41,6 +50,7 @@ export const initSocket = (server) => {
         });
 
         socket.on('typing',({conversationId}) => {
+            if (!socket.user) return;
             const userId = socket.user.userId
 
             // typing karne wale user ko nahi dikhna chahiye ye typing so socket not io
@@ -51,6 +61,7 @@ export const initSocket = (server) => {
         })
 
         socket.on('stopTyping',({conversationId}) => {
+            if (!socket.user) return;
             const userId = socket.user.userId
 
             socket.to(conversationId).emit('stopTyping',{
@@ -58,7 +69,9 @@ export const initSocket = (server) => {
                 conversationId
             })
         })
+
         socket.on('disconnect',() => {
+            if (!socket.user) return;
             const userId = socket.user.userId
             const count = onlineUsers.get(userId) || 0
 

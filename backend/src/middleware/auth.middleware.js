@@ -1,22 +1,19 @@
 import prisma from "../config/prisma.js";
+import ApiError from "../utils/apiError.js";
 import { verifyToken } from "../utils/jwt.js";
 
 
     
     export const verifyJwt = async (req,res,next) => {
         try {
-            const authHeader = req.headers.authorization;
+            const token = req.cookies.token 
             
-            if(!authHeader || !authHeader.startsWith('Bearer ')) {
-                return res.status(401).json(
-                    {message : "Unauthorized"}
-                )
+            if(!token) {
+                throw new ApiError(401,"No token provided / Unauthorized")
             }
         
-            const token = authHeader.split(' ')[1];
-        
             const decoded = verifyToken(token);
-            // console.log(decoded)
+    
         
             const user = await prisma.user.findUnique({
                 where : {id : decoded.userId}
