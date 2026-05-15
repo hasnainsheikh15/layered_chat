@@ -1,3 +1,4 @@
+import prisma from "../../config/prisma.js";
 import ApiError from "../../utils/apiError.js";
 import ApiResponse from "../../utils/apiResponse.js";
 import asyncHandler from "../../utils/asyncHandler.js";
@@ -5,18 +6,47 @@ import { getIO } from "../../websocket/socket.js";
 import { deleteForMe, deleteMessage, editMessage, fetchHiddenPayload, fetchMessage, sendMessage } from "./message.service.js";
 
 export const send = asyncHandler(async(req,res) => {
+    console.log("Send message request body:", req.body);
     const {conversationId , content , hidden} = req.body;
 
     if(!conversationId) {
         throw new ApiError(400,"conversationId required")
     }
-
+     console.log("2. Calling sendMessage...");
     const message = await sendMessage(req.user.id,conversationId,content,hidden)
+     console.log("3. Message saved:", message);
 
     const io = getIO();
+    console.log("4. Got IO:", !!io);
 
-    io.to(conversationId).emit('newMessage',{ message })
+    const participants = await prisma.conversationParticipants.findMany(
+        {
+            where : {
+                conversationId,
+                leftAt : null
+            }
+        }
+    )
+    console.log("5. Participants:", participants);
+    
+        for(const p of participants) {
+            try {
+                console.log("Emitting newMessage to user", p.userId);
+                const isSender = p.userId === req.user.id;
 
+        io.to(p.userId).emit("newMessage",{
+            message : {
+                ...message,
+                hasHidden : !!hidden && !isSender,
+                sentHidden : !!hidden && isSender
+            }
+        })
+            } catch (error) {
+                console.error("Error emitting newMessage to user", error);
+            }
+        }
+
+    console.log("7. Sending response...");
     return res.status(201).json(
         new ApiResponse(201,message,"Message sent")
     )

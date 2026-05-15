@@ -13,6 +13,12 @@ function ChatWindow({ conversation }) {
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState(false);
     const [revealedMessages, setRevealedMessages] = useState({});
+    const [nextCursor, setNextCursor] = useState(null);
+    const [loadingOlder, setLoadingOlder] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+
+    const shouldAutoScrollRef = useRef(true);
+    const previousScrollHeightRef = useRef(0);
 
     const handleReveal = async (msg) => {
         try {
@@ -56,14 +62,84 @@ function ChatWindow({ conversation }) {
         return d.toLocaleDateString();
     };
 
+    const loadOlderMessages = async () => {
+        // loadingOlderRef.current = true;
+        if (!nextCursor || loadingOlder) return;
+
+        try {
+
+            setLoadingOlder(true);
+
+            const container = scrollRef.current;
+
+            // const oldHeight = container.scrollHeight;
+            previousScrollHeightRef.current =
+                container.scrollHeight;
+            const res = await api.get(
+                `/messages/${conversation.id}?cursor=${nextCursor}`
+            );
+
+            const data = res.data.data;
+
+            setMessages((prev) => [
+                ...data.messages,
+                ...prev
+            ]);
+
+            setNextCursor(data.nextCursor);
+            setHasMore(!!data.nextCursor);
+            requestAnimationFrame(() => {
+
+                const newHeight = container.scrollHeight;
+
+                container.scrollTop =
+                    newHeight - previousScrollHeightRef.current;
+
+            });
+
+            // requestAnimationFrame(() => {
+
+            //     const newHeight = container.scrollHeight;
+
+            //     container.scrollTop += newHeight - oldHeight;
+
+            // });
+
+        } catch (err) {
+            console.error(err);
+        } finally {
+            // loadingOlderRef.current = false;
+            setLoadingOlder(false);
+        }
+    };
+
+
+
+
     useEffect(() => {
-        scrollRef.current?.scrollTo({
-            top: scrollRef.current.scrollHeight,
-            behavior: "smooth",
+
+        const container = scrollRef.current;
+
+        if (!container) return;
+
+
+        if (!shouldAutoScrollRef.current) return;
+
+        requestAnimationFrame(() => {
+
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: "smooth"
+            });
+
         });
+
     }, [messages]);
+
     useEffect(() => {
         if (!conversation) return;
+        const socket = getSocket();
+
         scrollRef.current?.scrollTo({
             top: scrollRef.current.scrollHeight,
             behavior: "auto",
@@ -77,28 +153,57 @@ function ChatWindow({ conversation }) {
                 console.log("MESSAGES:", res.data);
 
                 // setMessages(res.data.data.messages || res.data.data);
-                const fetched = res.data.data.messages || [];
-                setMessages(fetched)
+                // const fetched = res.data.data.messages || [];
+                const data = res.data.data;
+
+                setMessages(data.messages);
+                setNextCursor(data.nextCursor);
+                setHasMore(!!data.nextCursor);
+                requestAnimationFrame(() => {
+                    scrollRef.current?.scrollTo({
+                        top: scrollRef.current.scrollHeight,
+                        behavior: "auto",
+                    });
+                });
+
+
 
             } catch (err) {
                 console.error(err);
             }
-        };
 
+
+        };
         fetchMessages();
     }, [conversation?.id]);
+
     useEffect(() => {
         const socket = getSocket();
 
         if (!socket || !conversation) return;
 
         const handleNewMessage = (data) => {
-            const newMsg = data.message;
+            console.log("New message received via socket:", data);
 
+            if (!data?.message) return;
+
+            const newMsg = data.message;
 
             if (newMsg.conversationId !== conversation.id) return;
 
-            setMessages((prev) => [...prev, newMsg]);
+            setMessages((prev) => {
+                const exists = prev.some((m) => m.id === newMsg.id);
+
+                if (exists) return prev;
+
+                return [...prev, newMsg];
+            });
+
+            if (newMsg.senderId !== user.id) {
+                socket.emit("messageDelivered", {
+                    messageId: newMsg.id
+                });
+            }
         };
         socket.on("newMessage", handleNewMessage);
 
@@ -106,6 +211,7 @@ function ChatWindow({ conversation }) {
             socket.off("newMessage", handleNewMessage);
         };
     }, [conversation]);
+
     useEffect(() => {
         const socket = getSocket();
         if (!socket || !conversation) return;
@@ -129,14 +235,129 @@ function ChatWindow({ conversation }) {
             }
         };
 
+
         socket.on("typing", handleTyping);
         socket.on("stopTyping", handleStopTyping);
+
 
         return () => {
             socket.off("typing", handleTyping);
             socket.off("stopTyping", handleStopTyping);
+
         };
     }, [conversation]);
+
+    useEffect(() => {
+        const socket = getSocket();
+        if (!socket || !conversation) return;
+
+        const handleMessagesSeen = ({ conversationId, messages: seenMessages, seenByUserId }) => {
+            if (conversationId !== conversation.id) return;
+
+            // Update messages with seenAt information
+            setMessages((prev) =>
+                prev.map((msg) => {
+                    const seenMsg = seenMessages.find((m) => m.id === msg.id);
+                    if (seenMsg) {
+                        return {
+                            ...msg,
+                            seenAt: seenMsg.seenAt
+                        };
+                    }
+                    return msg;
+                })
+            );
+        };
+
+        socket.on("messagesSeen", handleMessagesSeen);
+
+        return () => {
+            socket.off("messagesSeen", handleMessagesSeen);
+        };
+    }, [conversation]);
+
+    useEffect(() => {
+
+        const container = scrollRef.current;
+        const socket = getSocket();
+        if (!container) return;
+
+        // const handleScroll = () => {
+
+        //     if (
+        //         container.scrollTop < 100 &&
+        //         hasMore &&
+        //         !loadingOlder
+        //     ) {
+        //         loadOlderMessages();
+        //     }
+        // };
+
+        const handleScroll = () => {
+
+            // 🔥 user near bottom?
+            const nearBottom =
+                container.scrollHeight -
+                container.scrollTop -
+                container.clientHeight <
+                150;
+
+            shouldAutoScrollRef.current = nearBottom;
+
+            if (nearBottom && messages.length > 0) {
+
+                const latestMessage =
+                    messages[messages.length - 1];
+
+
+                if (latestMessage.senderId !== user.id) {
+
+                    socket?.emit("messagesSeen", {
+                        conversationId: conversation.id
+                    });
+
+                }
+
+            }
+            // 🔥 load older
+            if (
+                container.scrollTop < 100 &&
+                hasMore &&
+                !loadingOlder
+            ) {
+                loadOlderMessages();
+            }
+        };
+
+        container.addEventListener("scroll", handleScroll);
+
+        return () => {
+            container.removeEventListener("scroll", handleScroll);
+        };
+
+    }, [nextCursor, hasMore, loadingOlder]);
+
+    useEffect(() => {
+
+        const socket = getSocket();
+
+        if (!socket || !conversation) return;
+
+        socket.emit("openConversation", {
+            conversationId: conversation.id
+        });
+
+        return () => {
+
+            socket.emit("closeConversation");
+
+        };
+
+    }, [conversation?.id]);
+
+
+
+
     if (!conversation) {
         return (
             <div className="h-full flex items-center justify-center text-muted-foreground">
@@ -176,6 +397,11 @@ function ChatWindow({ conversation }) {
                         )}
                     </div>
                 </div>
+                {loadingOlder && (
+                    <div className="text-center text-xs text-gray-400 py-2">
+                        Loading older messages...
+                    </div>
+                )}
 
                 {/* MESSAGES */}
                 <div
@@ -214,7 +440,7 @@ function ChatWindow({ conversation }) {
                             // setMessages((prev) => [...prev, newMessage]);
 
                         } catch (err) {
-                            console.error(err);
+                            console.log(err.message);
                         }
                     }}
                 />
