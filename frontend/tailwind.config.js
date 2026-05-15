@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        poppins: ['Poppins', 'sans-serif'],
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -18,6 +21,17 @@ export default {
 
         muted: "hsl(var(--muted))",
         accent: "hsl(var(--accent))",
+        
+        // New theme colors
+        'teal-dark': '#071510',
+        'teal-secondary': '#0d2318',
+        'teal-accent': '#40D2BA',
+        'teal-dark-text': '#04342C',
+      },
+      animation: {
+        float: 'float 4s ease-in-out infinite',
+        'pulse-glow': 'pulseGlow 2.5s ease-in-out infinite',
+        'bounce-stagger': 'bounceStagger 0.6s ease-in-out infinite',
       },
     },
   },

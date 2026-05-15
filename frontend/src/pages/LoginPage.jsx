@@ -1,6 +1,6 @@
 import { useState , useEffect  } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Lock, ArrowRight, Leaf } from "lucide-react";
+import { User, Lock, ArrowRight } from "lucide-react";
 import api from "../api/axios";
 import { generateKeyPair, exportPublicKey } from "../utils/crypto.js";
 import { getKeys, saveKeys } from "../utils/KeyStorage.js";
@@ -53,44 +53,39 @@ const Login = () => {
 
     
     return (
-        <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#f0f7f0]">
-            {/* Organic background layers */}
-            <div className="absolute inset-0">
-                <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-br from-emerald-200/60 to-green-100/40 blur-[100px]" />
-                <div className="absolute bottom-[-15%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-tl from-lime-200/50 to-emerald-100/30 blur-[120px]" />
-                <div className="absolute top-[30%] right-[20%] w-[30vw] h-[30vw] rounded-full bg-gradient-to-br from-green-300/20 to-teal-100/20 blur-[80px]" />
-                <div className="absolute bottom-[20%] left-[15%] w-[20vw] h-[20vw] rounded-full bg-white/40 blur-[60px]" />
-                {/* Faint leaf shapes */}
-                <div className="absolute top-[10%] right-[30%] w-32 h-32 rounded-[60%_40%_70%_30%] bg-emerald-300/10 rotate-45 blur-sm" />
-                <div className="absolute bottom-[25%] left-[10%] w-24 h-24 rounded-[60%_40%_70%_30%] bg-green-400/8 -rotate-12 blur-sm" />
-            </div>
+        <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #071510 0%, #0b1e17 40%, #071510 100%)' }}>
+            {/* Top radial glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96" style={{
+                background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(64,210,186,0.13), transparent)',
+                pointerEvents: 'none'
+            }} />
 
             {/* Login card with float animation */}
-            <div className="relative z-10 w-full max-w-md mx-4 animate-[float_6s_ease-in-out_infinite]">
+            <div className="relative z-10 w-full max-w-md mx-4 animate-float">
                 <div
                     className="rounded-3xl p-8 sm:p-10 backdrop-blur-xl border shadow-2xl"
                     style={{
-                        background: "rgba(255, 255, 255, 0.45)",
-                        borderColor: "rgba(74, 222, 128, 0.25)",
-                        boxShadow:
-                            "0 8px 60px rgba(74, 222, 128, 0.12), 0 2px 20px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6)",
+                        background: "rgba(13, 35, 24, 0.4)",
+                        borderColor: "rgba(64, 210, 186, 0.2)",
+                        boxShadow: "0 8px 60px rgba(64, 210, 186, 0.1), 0 2px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(64, 210, 186, 0.1)",
                     }}
                 >
                     {/* Branding */}
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center gap-2 mb-3">
-                            <Leaf className="w-7 h-7 text-emerald-500" strokeWidth={2.5} />
-                            <h1
-                                className="text-4xl font-bold bg-clip-text text-transparent"
-                                style={{
-                                    backgroundImage: "linear-gradient(135deg, #059669, #34d399, #6ee7b7)",
-                                    fontFamily: "'Space Grotesk', sans-serif",
-                                }}
-                            >
-                                Layered
-                            </h1>
-                        </div>
-                        <p className="text-emerald-700/60 text-sm tracking-wide">
+                        <h1
+                            className="text-4xl font-bold mb-3"
+                            style={{
+                                backgroundImage: "linear-gradient(135deg, #40D2BA, #40D2BA)",
+                                backgroundClip: 'text',
+                                color: 'transparent',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                fontWeight: 700,
+                            }}
+                        >
+                            Layered
+                        </h1>
+                        <p className="text-white/55 text-sm tracking-wide" style={{ fontWeight: 400 }}>
                             Conversations, reimagined
                         </p>
                     </div>
@@ -101,7 +96,7 @@ const Login = () => {
                         <div className="relative group">
                             <div
                                 className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200"
-                                style={{ color: focusedField === "username" ? "#10b981" : "#9ca3af" }}
+                                style={{ color: focusedField === "username" ? "#40D2BA" : "rgba(255, 255, 255, 0.55)" }}
                             >
                                 <User className="w-4.5 h-4.5" />
                             </div>
@@ -112,17 +107,15 @@ const Login = () => {
                                 onChange={(e) => setUsername(e.target.value)}
                                 onFocus={() => setFocusedField("username")}
                                 onBlur={() => setFocusedField(null)}
-                                className="w-full pl-12 pr-4 py-3.5 rounded-2xl text-sm text-gray-800 placeholder:text-gray-400 outline-none transition-all duration-300 border"
+                                className="w-full pl-12 pr-4 py-3.5 rounded-2xl text-sm text-white placeholder:text-white/55 outline-none transition-all duration-300 border"
                                 style={{
-                                    background: "rgba(255, 255, 255, 0.5)",
-                                    borderColor:
-                                        focusedField === "username"
-                                            ? "rgba(16, 185, 129, 0.5)"
-                                            : "rgba(209, 213, 219, 0.4)",
-                                    boxShadow:
-                                        focusedField === "username"
-                                            ? "0 0 20px rgba(16, 185, 129, 0.15), 0 0 6px rgba(16, 185, 129, 0.1)"
-                                            : "none",
+                                    background: "rgba(255, 255, 255, 0.06)",
+                                    borderColor: focusedField === "username"
+                                        ? "rgba(64, 210, 186, 0.4)"
+                                        : "rgba(255, 255, 255, 0.1)",
+                                    boxShadow: focusedField === "username"
+                                        ? "0 0 20px rgba(64, 210, 186, 0.15), 0 0 6px rgba(64, 210, 186, 0.1)"
+                                        : "none",
                                 }}
                             />
                         </div>
@@ -131,7 +124,7 @@ const Login = () => {
                         <div className="relative group">
                             <div
                                 className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200"
-                                style={{ color: focusedField === "password" ? "#10b981" : "#9ca3af" }}
+                                style={{ color: focusedField === "password" ? "#40D2BA" : "rgba(255, 255, 255, 0.55)" }}
                             >
                                 <Lock className="w-4.5 h-4.5" />
                             </div>
@@ -142,24 +135,22 @@ const Login = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 onFocus={() => setFocusedField("password")}
                                 onBlur={() => setFocusedField(null)}
-                                className="w-full pl-12 pr-4 py-3.5 rounded-2xl text-sm text-gray-800 placeholder:text-gray-400 outline-none transition-all duration-300 border"
+                                className="w-full pl-12 pr-4 py-3.5 rounded-2xl text-sm text-white placeholder:text-white/55 outline-none transition-all duration-300 border"
                                 style={{
-                                    background: "rgba(255, 255, 255, 0.5)",
-                                    borderColor:
-                                        focusedField === "password"
-                                            ? "rgba(16, 185, 129, 0.5)"
-                                            : "rgba(209, 213, 219, 0.4)",
-                                    boxShadow:
-                                        focusedField === "password"
-                                            ? "0 0 20px rgba(16, 185, 129, 0.15), 0 0 6px rgba(16, 185, 129, 0.1)"
-                                            : "none",
+                                    background: "rgba(255, 255, 255, 0.06)",
+                                    borderColor: focusedField === "password"
+                                        ? "rgba(64, 210, 186, 0.4)"
+                                        : "rgba(255, 255, 255, 0.1)",
+                                    boxShadow: focusedField === "password"
+                                        ? "0 0 20px rgba(64, 210, 186, 0.15), 0 0 6px rgba(64, 210, 186, 0.1)"
+                                        : "none",
                                 }}
                             />
                         </div>
 
                         {/* Forgot link */}
                         <div className="text-right">
-                            <button type="button" className="text-xs text-emerald-600/70 hover:text-emerald-600 transition-colors">
+                            <button type="button" className="text-xs transition-colors" style={{ color: 'rgba(64, 210, 186, 0.7)', fontWeight: 500 }}>
                                 Forgot password?
                             </button>
                         </div>
@@ -167,18 +158,18 @@ const Login = () => {
                         {/* Login button */}
                         <button
                             type="submit"
-                            className="w-full py-3.5 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group"
+                            className="w-full py-3.5 rounded-2xl text-sm font-semibold text-[#04342C] flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group"
                             style={{
-                                background: "linear-gradient(135deg, #059669, #34d399, #a7f3d0)",
-                                boxShadow: "0 4px 25px rgba(16, 185, 129, 0.3), 0 1px 3px rgba(0,0,0,0.06)",
+                                background: "#40D2BA",
+                                boxShadow: "0 4px 25px rgba(64, 210, 186, 0.3), 0 1px 3px rgba(0,0,0,0.06)",
                             }}
                             onMouseEnter={(e) => {
                                 e.target.style.boxShadow =
-                                    "0 6px 35px rgba(16, 185, 129, 0.45), 0 2px 6px rgba(0,0,0,0.08)";
+                                    "0 6px 35px rgba(64, 210, 186, 0.45), 0 2px 6px rgba(0,0,0,0.08)";
                             }}
                             onMouseLeave={(e) => {
                                 e.target.style.boxShadow =
-                                    "0 4px 25px rgba(16, 185, 129, 0.3), 0 1px 3px rgba(0,0,0,0.06)";
+                                    "0 4px 25px rgba(64, 210, 186, 0.3), 0 1px 3px rgba(0,0,0,0.06)";
                             }}
                         >
                             Sign In
@@ -187,22 +178,14 @@ const Login = () => {
                     </form>
 
                     {/* Footer */}
-                    <p className="text-center text-xs text-gray-400 mt-6">
+                    <p className="text-center text-xs text-white/55 mt-6">
                         Don't have an account?{" "}
-                        <button className="text-emerald-600 font-medium hover:underline" onClick={() => navigate("/register")}>
+                        <button className="text-teal-accent font-medium hover:underline" onClick={() => navigate("/register")}>
                             Create one
                         </button>
                     </p>
                 </div>
             </div>
-
-            {/* Float keyframe */}
-            <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-      `}</style>
         </div>
     );
 };

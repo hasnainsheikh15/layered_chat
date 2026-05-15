@@ -101,41 +101,38 @@ const RegisterPage = () => {
   };
 
   return (
-  <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#f0f7f0]">
+  <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #071510 0%, #0b1e17 40%, #071510 100%)' }}>
 
-    {/* Background (SAME as login) */}
-    <div className="absolute inset-0">
-      <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-br from-emerald-200/60 to-green-100/40 blur-[100px]" />
-      <div className="absolute bottom-[-15%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-tl from-lime-200/50 to-emerald-100/30 blur-[120px]" />
-      <div className="absolute top-[30%] right-[20%] w-[30vw] h-[30vw] rounded-full bg-gradient-to-br from-green-300/20 to-teal-100/20 blur-[80px]" />
-      <div className="absolute bottom-[20%] left-[15%] w-[20vw] h-[20vw] rounded-full bg-white/40 blur-[60px]" />
-    </div>
+    {/* Top radial glow */}
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96" style={{
+        background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(64,210,186,0.13), transparent)',
+        pointerEvents: 'none'
+    }} />
 
     {/* Card */}
-    <div className="relative z-10 w-full max-w-md mx-4 animate-[float_6s_ease-in-out_infinite]">
+    <div className="relative z-10 w-full max-w-md mx-4 animate-float">
       <div
         className="rounded-3xl p-8 sm:p-10 backdrop-blur-xl border shadow-2xl"
         style={{
-          background: "rgba(255, 255, 255, 0.45)",
-          borderColor: "rgba(74, 222, 128, 0.25)",
-          boxShadow:
-            "0 8px 60px rgba(74, 222, 128, 0.12), 0 2px 20px rgba(0,0,0,0.04)",
+          background: "rgba(13, 35, 24, 0.4)",
+          borderColor: "rgba(64, 210, 186, 0.2)",
+          boxShadow: "0 8px 60px rgba(64, 210, 186, 0.1), 0 2px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(64, 210, 186, 0.1)",
         }}
       >
 
         {/* Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <Leaf className="w-7 h-7 text-emerald-500" />
-            <h1 className="text-4xl font-bold bg-clip-text text-transparent"
-              style={{
-                backgroundImage: "linear-gradient(135deg, #059669, #34d399, #6ee7b7)",
-              }}
-            >
+          <h1 className="text-4xl font-bold mb-3" style={{
+                backgroundImage: "linear-gradient(135deg, #40D2BA, #40D2BA)",
+                backgroundClip: 'text',
+                color: 'transparent',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontWeight: 700,
+            }}>
               Layered
             </h1>
-          </div>
-          <p className="text-emerald-700/60 text-sm">
+          <p className="text-white/55 text-sm" style={{ fontWeight: 400 }}>
             Create your account
           </p>
         </div>
@@ -145,7 +142,7 @@ const RegisterPage = () => {
 
           {/* Username */}
           <div className="relative">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/55 w-4 h-4" />
             <input
               type="text"
               placeholder="Username"
@@ -155,24 +152,28 @@ const RegisterPage = () => {
                 setUsername(val);
                 checkUsername(val);
               }}
-              className="w-full pl-12 pr-4 py-3.5 rounded-2xl border bg-white/50 outline-none"
+              className="w-full pl-12 pr-4 py-3.5 rounded-2xl border text-white placeholder:text-white/55 outline-none transition-all duration-300"
+              style={{
+                background: "rgba(255, 255, 255, 0.06)",
+                borderColor: "rgba(255, 255, 255, 0.1)",
+              }}
             />
           </div>
 
           {/* Username status */}
           {usernameStatus === "checking" && (
-            <p className="text-xs text-gray-400">Checking...</p>
+            <p className="text-xs text-white/55">Checking...</p>
           )}
           {usernameStatus === "available" && (
-            <p className="text-xs text-green-500">Available ✔</p>
+            <p className="text-xs text-teal-accent">Available ✔</p>
           )}
           {usernameStatus === "taken" && (
-            <p className="text-xs text-red-500">Taken ✖</p>
+            <p className="text-xs text-red-400">Taken ✖</p>
           )}
 
           {/* Password */}
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/55 w-4 h-4" />
             <input
               type="password"
               placeholder="Password"
@@ -182,13 +183,17 @@ const RegisterPage = () => {
                 setPassword(val);
                 validatePasswords(val, confirmPassword);
               }}
-              className="w-full pl-12 pr-4 py-3.5 rounded-2xl border bg-white/50 outline-none"
+              className="w-full pl-12 pr-4 py-3.5 rounded-2xl border text-white placeholder:text-white/55 outline-none transition-all duration-300"
+              style={{
+                background: "rgba(255, 255, 255, 0.06)",
+                borderColor: "rgba(255, 255, 255, 0.1)",
+              }}
             />
           </div>
 
           {/* Confirm Password */}
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/55 w-4 h-4" />
             <input
               type="password"
               placeholder="Confirm Password"
@@ -198,23 +203,25 @@ const RegisterPage = () => {
                 setConfirmPassword(val);
                 validatePasswords(password, val);
               }}
-              className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border bg-white/50 outline-none ${
-                passwordError ? "border-red-400" : ""
-              }`}
+              className="w-full pl-12 pr-4 py-3.5 rounded-2xl border text-white placeholder:text-white/55 outline-none transition-all duration-300"
+              style={{
+                background: "rgba(255, 255, 255, 0.06)",
+                borderColor: passwordError ? "rgba(244, 63, 94, 0.5)" : "rgba(255, 255, 255, 0.1)",
+              }}
             />
           </div>
 
           {passwordError && (
-            <p className="text-xs text-red-500">{passwordError}</p>
+            <p className="text-xs text-red-400">{passwordError}</p>
           )}
 
           {/* Button */}
           <button
             type="submit"
             disabled={loading || usernameStatus !== "available" || passwordError}
-            className="w-full py-3.5 rounded-2xl text-white font-semibold transition hover:scale-[1.02]"
+            className="w-full py-3.5 rounded-2xl text-[#04342C] font-semibold transition hover:scale-[1.02] disabled:opacity-50"
             style={{
-              background: "linear-gradient(135deg, #059669, #34d399)",
+              background: "#40D2BA",
             }}
           >
             {loading ? "Creating..." : "Create Account"}
@@ -223,11 +230,12 @@ const RegisterPage = () => {
         </form>
 
         {/* Footer */}
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-white/55 mt-6">
           Already have an account?{" "}
           <span
             onClick={() => navigate("/")}
-            className="text-emerald-600 cursor-pointer"
+            className="text-teal-accent cursor-pointer hover:underline"
+            style={{ fontWeight: 500 }}
           >
             Login
           </span>
@@ -235,14 +243,6 @@ const RegisterPage = () => {
 
       </div>
     </div>
-
-    {/* animation */}
-    <style>{`
-      @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-8px); }
-      }
-    `}</style>
 
   </div>
 );

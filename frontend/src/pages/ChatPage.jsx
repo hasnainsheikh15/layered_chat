@@ -237,16 +237,13 @@ function ChatPage() {
 
   return (
 
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#f0f7f0]">
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #071510 0%, #0b1e17 40%, #071510 100%)' }}>
 
-      {/* SAME BACKGROUND AS LOGIN */}
-      <div className="absolute inset-0">
-
-        <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-br from-emerald-200/60 to-green-100/40 blur-[100px]" />
-
-        <div className="absolute bottom-[-15%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-tl from-lime-200/50 to-emerald-100/30 blur-[120px]" />
-
-      </div>
+      {/* Top radial glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96" style={{
+          background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(64,210,186,0.13), transparent)',
+          pointerEvents: 'none'
+      }} />
 
       <div className="relative z-10 w-full max-w-[1400px] h-[90vh] flex gap-4 p-4">
 

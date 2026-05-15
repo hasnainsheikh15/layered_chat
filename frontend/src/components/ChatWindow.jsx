@@ -360,37 +360,37 @@ function ChatWindow({ conversation }) {
 
     if (!conversation) {
         return (
-            <div className="h-full flex items-center justify-center text-muted-foreground">
+            <div className="h-full flex items-center justify-center text-white/55">
                 Select a conversation
             </div>
         );
     }
     // console.log("CHAT WINDOW:", conversation);
     return (
-        <div className="flex flex-col h-full rounded-3xl p-[1px] bg-gradient-to-br from-green-200/40 to-emerald-300/20 shadow-xl">
+        <div className="flex flex-col h-full rounded-3xl p-[1px] shadow-xl" style={{ background: 'linear-gradient(135deg, rgba(64, 210, 186, 0.2), rgba(64, 210, 186, 0.1))' }}>
 
-            <div className="flex flex-col h-full bg-white/60 backdrop-blur-xl rounded-3xl overflow-hidden">
+            <div className="flex flex-col h-full backdrop-blur-xl rounded-3xl overflow-hidden border" style={{ background: 'rgba(13, 35, 24, 0.4)', borderColor: 'rgba(64, 210, 186, 0.15)' }}>
 
                 {/* HEADER */}
-                <div className="flex items-center gap-3 px-5 py-4 border-b border-white/40 bg-white/40 backdrop-blur-md">
+                <div className="flex items-center gap-3 px-5 py-4 border-b" style={{ borderColor: 'rgba(64, 210, 186, 0.15)', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)' }}>
 
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white"
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-[#04342C]"
                         style={{
-                            background: "linear-gradient(135deg, #059669, #34d399)"
+                            background: "#40D2BA"
                         }}
                     >
                         {conversation.avatar || conversation.name?.charAt(0)}
                     </div>
 
                     <div>
-                        <h2 className="text-sm font-semibold text-gray-800">
+                        <h2 className="text-sm font-semibold text-white">
                             {conversation.name}
                         </h2>
 
                         {conversation.online && (
                             <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                                <span className="text-[11px] text-gray-500">
+                                <span className="w-1.5 h-1.5 rounded-full bg-teal-accent" />
+                                <span className="text-[11px] text-white/55">
                                     online
                                 </span>
                             </div>
@@ -398,7 +398,7 @@ function ChatWindow({ conversation }) {
                     </div>
                 </div>
                 {loadingOlder && (
-                    <div className="text-center text-xs text-gray-400 py-2">
+                    <div className="text-center text-xs text-white/55 py-2">
                         Loading older messages...
                     </div>
                 )}

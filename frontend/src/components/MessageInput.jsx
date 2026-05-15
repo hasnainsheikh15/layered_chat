@@ -46,37 +46,40 @@ function MessageInput({ onSend, conversationId }) {
   };
   return (
     <div className="px-4 py-3">
-      <div className="flex items-center gap-2 bg-white/60 backdrop-blur-md border border-white/40 shadow-md rounded-2xl px-4 py-2">
+      <div className="flex items-center gap-2 backdrop-blur-md border rounded-2xl px-4 py-2" style={{ background: 'rgba(255, 255, 255, 0.06)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
 
         <input
           value={value}
           onChange={handleTyping}
           placeholder="Type a message..."
-          className="flex-1 bg-transparent text-sm outline-none"
+          className="flex-1 bg-transparent text-sm outline-none text-white placeholder:text-white/55"
         />
         {secretMode && (
-          <div className="mt-2 px-3 py-2 bg-green-50 border border-green-200 rounded-xl">
+          <div className="mt-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(64, 210, 186, 0.1)', border: '1px solid rgba(64, 210, 186, 0.2)' }}>
             <input
               value={hiddenText}
               onChange={(e) => setHiddenText(e.target.value)}
               placeholder="Hidden message..."
-              className="w-full bg-transparent text-xs outline-none"
+              className="w-full bg-transparent text-xs outline-none text-white placeholder:text-white/55"
             />
           </div>
         )}
         <button
           onClick={() => setSecretMode((prev) => !prev)}
-          className={`w-9 h-9 rounded-xl flex items-center justify-center transition
-    ${secretMode ? "bg-green-500 text-white" : "bg-white/50"}
-  `}
+          className={`w-9 h-9 rounded-xl flex items-center justify-center transition`}
+          style={{
+            background: secretMode ? "#40D2BA" : "rgba(255, 255, 255, 0.06)",
+            border: secretMode ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
+            color: secretMode ? "#04342C" : "white"
+          }}
         >
           🔒
         </button>
         <button
           onClick={handleSend}
-          className="w-9 h-9 rounded-xl text-white flex items-center justify-center"
+          className="w-9 h-9 rounded-xl text-[#04342C] flex items-center justify-center"
           style={{
-            background: "linear-gradient(135deg, #059669, #34d399)"
+            background: "#40D2BA"
           }}
         >
           <Send size={16} />

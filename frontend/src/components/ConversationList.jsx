@@ -26,19 +26,16 @@ function ConversationList({
 
   return (
 
-    <aside className="w-full h-full rounded-3xl p-[1px] bg-gradient-to-br from-green-200/40 to-emerald-300/20 shadow-xl">
+    <aside className="w-full h-full rounded-3xl p-[1px] shadow-xl" style={{ background: 'linear-gradient(135deg, rgba(64, 210, 186, 0.2), rgba(64, 210, 186, 0.1))' }}>
 
-      <div className="h-full flex flex-col bg-white/60 backdrop-blur-xl rounded-3xl overflow-hidden">
+      <div className="h-full flex flex-col backdrop-blur-xl rounded-3xl overflow-hidden border" style={{ background: 'rgba(13, 35, 24, 0.4)', borderColor: 'rgba(64, 210, 186, 0.15)' }}>
 
         {/* HEADER */}
         <div className="px-5 pt-5 pb-3">
 
           <h1
-            className="text-2xl font-bold text-transparent bg-clip-text"
-            style={{
-              backgroundImage:
-                "linear-gradient(135deg, #059669, #34d399)"
-            }}
+            className="text-2xl font-bold text-teal-accent"
+            style={{ fontWeight: 700 }}
           >
             Layered
           </h1>
@@ -48,16 +45,16 @@ function ConversationList({
         {/* SEARCH */}
         <div className="px-4 pb-3">
 
-          <div className="flex items-center gap-2 bg-white/60 backdrop-blur-md rounded-xl px-3 py-2 border border-white/40">
+          <div className="flex items-center gap-2 backdrop-blur-md rounded-xl px-3 py-2 border" style={{ background: 'rgba(255, 255, 255, 0.06)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
 
             <Search
               size={14}
-              className="text-gray-400"
+              className="text-white/55"
             />
 
             <input
               placeholder="Search"
-              className="bg-transparent text-xs outline-none flex-1"
+              className="bg-transparent text-xs outline-none flex-1 text-white placeholder:text-white/55"
             />
 
           </div>
@@ -78,18 +75,18 @@ function ConversationList({
 
           ${
             c.id === activeId
-              ? "bg-white/70 backdrop-blur-md shadow-md"
-              : "hover:bg-white/50"
+              ? "backdrop-blur-md shadow-md border"
+              : "hover:bg-white/10"
           }`}
+              style={c.id === activeId ? { background: 'rgba(255, 255, 255, 0.08)', borderColor: 'rgba(64, 210, 186, 0.2)' } : {}}
             >
 
               <div className="relative w-11 h-11">
 
                 <div
-                  className="w-full h-full rounded-full flex items-center justify-center text-sm font-semibold text-white"
+                  className="w-full h-full rounded-full flex items-center justify-center text-sm font-semibold text-[#04342C]"
                   style={{
-                    background:
-                      "linear-gradient(135deg, #059669, #34d399)"
+                    background: "#40D2BA"
                   }}
                 >
                   {c.name?.charAt(0)}
@@ -97,7 +94,7 @@ function ConversationList({
 
                 {c.online && (
 
-                  <span className="absolute bottom-[2px] right-[2px] w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                  <span className="absolute bottom-[2px] right-[2px] w-3 h-3 bg-teal-accent rounded-full border-2 border-[#071510]" />
 
                 )}
 
@@ -107,13 +104,13 @@ function ConversationList({
 
                 <div className="flex justify-between">
 
-                  <span className="text-sm font-medium text-gray-800 truncate">
+                  <span className="text-sm font-medium text-white truncate">
 
                     {c.name}
 
                   </span>
 
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-[11px] text-white/55">
 
                     {formatSentAgo(c.lastActivity)}
 
@@ -123,7 +120,7 @@ function ConversationList({
 
                 <div className="flex items-center justify-between mt-0.5">
 
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-xs text-white/55 truncate">
 
                     {c.lastMessage}
 
@@ -133,9 +130,9 @@ function ConversationList({
 
                     <div className="flex items-center gap-1 ml-2">
 
-                      <span className="w-2 h-2 rounded-full bg-green-500" />
+                      <span className="w-2 h-2 rounded-full bg-teal-accent" />
 
-                      <span className="text-[10px] text-green-600 font-medium">
+                      <span className="text-[10px] text-teal-accent font-medium">
 
                         {c.unread > 4
                           ? "4+ new"

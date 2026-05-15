@@ -114,14 +114,14 @@ function MessageBubble({
 
                 {/* metadata */}
                 {isMine && (
-                    <div className="absolute inset-y-0 left-0 flex flex-col justify-center px-3 text-[10px] text-gray-500 pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 flex flex-col justify-center px-3 text-[10px] pointer-events-none" style={{ color: 'rgba(255, 255, 255, 0.55)' }}>
 
-                        <span>
+                        <span style={{ fontWeight: 500 }}>
                             Sent • {formatTime(msg.createdAt)}
                         </span>
 
                         {msg.seenAt && (
-                            <span>
+                            <span style={{ fontWeight: 500 }}>
                                 Opened • {formatTime(msg.seenAt)}
                             </span>
                         )}
@@ -147,28 +147,26 @@ function MessageBubble({
                     onMouseLeave={handleMouseUp}
 
                     style={{
-                        transform: `translateX(${offsetX}px)`
+                        transform: `translateX(${offsetX}px)`,
+                        background: isMine ? "#40D2BA" : "rgba(13, 30, 38, 0.85)",
+                        borderColor: isMine ? "transparent" : "rgba(64, 210, 186, 0.15)",
+                        backdropFilter: isMine ? "none" : "blur(10px)",
+                        WebkitBackdropFilter: isMine ? "none" : "blur(10px)",
                     }}
 
-                    className={`px-4 py-2.5 rounded-2xl text-sm shadow-sm transition-transform duration-200
+                    className={`px-4 py-2.5 rounded-2xl text-sm shadow-sm transition-transform duration-200 border
         ${isMine
-                            ? "text-white"
-                            : "bg-white/70 backdrop-blur-md text-gray-800 border border-white/40"
+                            ? "text-[#04342C]"
+                            : "text-white"
                         }`}
 
-                    {...(isMine
-                        ? {
-                            style: {
-                                transform: `translateX(${offsetX}px)`,
-                                background:
-                                    "linear-gradient(135deg, #059669, #34d399)"
-                            }
-                        }
-                        : {
-                            style: {
-                                transform: `translateX(${offsetX}px)`
-                            }
-                        })}
+                    style={{
+                        transform: `translateX(${offsetX}px)`,
+                        background: isMine ? "#40D2BA" : "rgba(13, 30, 38, 0.85)",
+                        borderRadius: isMine ? "16px 4px 16px 16px" : "4px 16px 16px 16px",
+                        border: isMine ? "none" : "1px solid rgba(64, 210, 186, 0.15)",
+                        boxShadow: isMine ? "0 4px 12px rgba(64, 210, 186, 0.2)" : "0 2px 8px rgba(0, 0, 0, 0.3)",
+                    }}
                 >
 
                     {/* visible text */}
@@ -187,7 +185,13 @@ function MessageBubble({
                                 onClick={() => {
                                     onReveal(msg)
                                 }}
-                                className="mt-2 h-6 rounded-lg bg-gradient-to-r from-green-200/40 via-green-300/60 to-green-200/40 animate-pulse cursor-pointer backdrop-blur-sm border border-green-200/50 flex items-center justify-center text-[12px] text-green-700 shimmer px-3"
+                                className="mt-2 h-6 rounded-lg animate-pulse cursor-pointer backdrop-blur-sm border flex items-center justify-center text-[12px] px-3"
+                                style={{
+                                    background: "rgba(64, 210, 186, 0.15)",
+                                    borderColor: "rgba(64, 210, 186, 0.3)",
+                                    color: "#40D2BA",
+                                    fontWeight: 500
+                                }}
                             >
                                 ✨ reveal
                             </button>
@@ -197,7 +201,7 @@ function MessageBubble({
                     {/* hidden content */}
                     {revealedMessages[msg.id] && (
 
-                        <div className="mt-2 text-xs text-gray-700 bg-green-50 px-2 py-1 rounded-md animate-fade-in">
+                        <div className="mt-2 text-xs px-2 py-1 rounded-md animate-fade-in" style={{ background: 'rgba(64, 210, 186, 0.1)', borderLeft: '2px solid #40D2BA', color: '#FFFFFF' }}>
 
                             {revealedMessages[msg.id]}
 
@@ -225,7 +229,7 @@ function MessageBubble({
 
                                 <Info
                                     size={12}
-                                    className="text-white/70"
+                                    style={{ color: '#04342C' }}
                                 />
 
                             </button>
@@ -233,7 +237,7 @@ function MessageBubble({
                         )}
 
                         {/* time */}
-                        <span className="text-[10px] opacity-70">
+                        <span className="text-[10px]" style={{ color: isMine ? '#04342C' : 'rgba(255, 255, 255, 0.7)', fontWeight: 500 }}>
 
                             {formatTime(msg.createdAt)}
 
@@ -245,7 +249,8 @@ function MessageBubble({
 
                             <div
                                 ref={popupRef}
-                                className="absolute bottom-0 right-full mr-2 bg-white/80 backdrop-blur-md border border-white/40 shadow-lg rounded-xl px-3 py-2 text-[10px] text-gray-700 min-w-[140px] z-50 animate-fade-in"
+                                className="absolute bottom-0 right-full mr-2 backdrop-blur-md border shadow-lg rounded-xl px-3 py-2 text-[10px] min-w-[140px] z-50 animate-fade-in"
+                                style={{ background: 'rgba(13, 30, 38, 0.95)', borderColor: 'rgba(64, 210, 186, 0.3)', color: '#40D2BA', fontWeight: 500 }}
                             >
 
                                 <div>
