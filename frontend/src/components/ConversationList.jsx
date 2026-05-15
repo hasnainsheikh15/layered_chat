@@ -1,13 +1,17 @@
 import { Search } from "lucide-react";
-import { formatSentAgo } from "../utils/formatSentAgo";
+import { formatSentAgo } from "../utils/formatSentAgo.js";
 import {
   LogOut,
   Shield,
   User2,
   Palette
 } from "lucide-react";
-import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import {
+  useState, useEffect,
+  useRef
+} from "react";
+import { useAuth } from "../context/AuthContext.jsx";
+import LayerSettings from "./LayerSettings.jsx";
 
 const formatTime = (date) => {
   const d = new Date(date);
@@ -35,6 +39,39 @@ function ConversationList({
   const [showMenu, setShowMenu] =
     useState(false);
 
+  useEffect(() => {
+
+    const handleOutsideClick = (e) => {
+
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target)
+      ) {
+
+        setShowMenu(false);
+
+      }
+
+    };
+
+    document.addEventListener(
+      "mousedown",
+      handleOutsideClick
+    );
+
+    return () => {
+
+      document.removeEventListener(
+        "mousedown",
+        handleOutsideClick
+      );
+
+    };
+
+  }, []);
+
+  const menuRef = useRef(null);
+
   const { user, logout } =
     useAuth();
 
@@ -48,7 +85,7 @@ function ConversationList({
 
         {/* HEADER */}
         {/* HEADER */}
-        <div className="px-5 pt-5 pb-3 flex items-center justify-between relative">
+        <div ref={menuRef} className="px-5 pt-5 pb-3 flex items-center justify-between relative">
 
           {/* app title */}
           <h1
@@ -126,16 +163,14 @@ function ConversationList({
 
                 </div>
 
+                <div className="p-3 border-b border-white/5">
+
+                  <LayerSettings />
+
+                </div>
+
                 {/* menu items */}
                 <div className="p-2">
-
-                  <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm text-white/75 hover:bg-white/[0.04] transition-all">
-
-                    <Shield size={16} />
-
-                    Layer Mode
-
-                  </button>
 
                   <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm text-white/75 hover:bg-white/[0.04] transition-all">
 
@@ -231,11 +266,11 @@ function ConversationList({
                   {c.name?.charAt(0)}
                 </div>
 
-                {c.online && (
+                {/* {c.online && (
 
                   <span className="absolute bottom-[2px] right-[2px] w-3 h-3 bg-teal-accent rounded-full border-2 border-[#071510]" />
 
-                )}
+                )} */}
 
               </div>
 

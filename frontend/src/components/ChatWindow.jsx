@@ -387,14 +387,14 @@ function ChatWindow({ conversation }) {
                             {conversation.name}
                         </h2>
 
-                        {conversation.online && (
+                        {/* {conversation.online && (
                             <div className="flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-teal-accent" />
                                 <span className="text-[11px] text-white/55">
                                     online
                                 </span>
                             </div>
-                        )}
+                        )} */}
                     </div>
                 </div>
                 {loadingOlder && (
