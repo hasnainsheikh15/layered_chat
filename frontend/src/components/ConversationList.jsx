@@ -1,5 +1,13 @@
 import { Search } from "lucide-react";
 import { formatSentAgo } from "../utils/formatSentAgo";
+import {
+  LogOut,
+  Shield,
+  User2,
+  Palette
+} from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 const formatTime = (date) => {
   const d = new Date(date);
@@ -24,6 +32,14 @@ function ConversationList({
   onSelect
 }) {
 
+  const [showMenu, setShowMenu] =
+    useState(false);
+
+  const { user, logout } =
+    useAuth();
+
+
+
   return (
 
     <aside className="w-full h-full rounded-3xl p-[1px] shadow-xl" style={{ background: 'linear-gradient(135deg, rgba(64, 210, 186, 0.2), rgba(64, 210, 186, 0.1))' }}>
@@ -31,14 +47,138 @@ function ConversationList({
       <div className="h-full flex flex-col backdrop-blur-xl rounded-3xl overflow-hidden border" style={{ background: 'rgba(13, 35, 24, 0.4)', borderColor: 'rgba(64, 210, 186, 0.15)' }}>
 
         {/* HEADER */}
-        <div className="px-5 pt-5 pb-3">
+        {/* HEADER */}
+        <div className="px-5 pt-5 pb-3 flex items-center justify-between relative">
 
+          {/* app title */}
           <h1
-            className="text-2xl font-bold text-teal-accent"
-            style={{ fontWeight: 700 }}
+            className="text-2xl font-bold text-transparent bg-clip-text"
+            style={{
+              backgroundImage:
+                "linear-gradient(135deg, #40D2BA, #7FFFD4)"
+            }}
           >
             Layered
           </h1>
+
+          {/* user avatar */}
+          <div className="relative">
+
+            <button
+
+              onClick={() =>
+                setShowMenu(prev => !prev)
+              }
+
+              className="relative w-11 h-11 rounded-full flex items-center justify-center text-sm font-semibold border shadow-lg"
+
+              style={{
+
+                background:
+                  "rgba(13, 35, 24, 0.6)",
+
+                borderColor:
+                  "rgba(64, 210, 186, 0.18)"
+              }}
+            >
+
+              <span className="text-white">
+
+                {user?.username?.charAt(0)}
+
+              </span>
+
+              {/* online ring */}
+              <span className="absolute inset-0 rounded-full border border-[#40D2BA]/40 animate-pulse" />
+
+            </button>
+
+            {/* dropdown */}
+            {showMenu && (
+
+              <div
+
+                className="absolute right-0 mt-3 w-60 rounded-3xl border backdrop-blur-xl shadow-2xl overflow-hidden z-50"
+
+                style={{
+                  background:
+                    "rgba(13, 35, 24, 0.92)",
+
+                  borderColor:
+                    "rgba(64, 210, 186, 0.15)"
+                }}
+              >
+
+                {/* profile */}
+                <div className="px-4 py-4 border-b border-white/5">
+
+                  <p className="text-sm font-medium text-white">
+
+                    {user?.username}
+
+                  </p>
+
+                  <p className="text-xs text-white/40 mt-1">
+
+                    Layer secured communication
+
+                  </p>
+
+                </div>
+
+                {/* menu items */}
+                <div className="p-2">
+
+                  <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm text-white/75 hover:bg-white/[0.04] transition-all">
+
+                    <Shield size={16} />
+
+                    Layer Mode
+
+                  </button>
+
+                  <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm text-white/75 hover:bg-white/[0.04] transition-all">
+
+                    <User2 size={16} />
+
+                    Edit Profile
+
+                  </button>
+
+                  <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm text-white/75 hover:bg-white/[0.04] transition-all">
+
+                    <Palette size={16} />
+
+                    Appearance
+
+                  </button>
+
+                </div>
+
+                {/* logout */}
+                <div className="p-2 border-t border-white/5">
+
+                  <button
+
+                    onClick={logout}
+
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm text-red-300 hover:bg-red-500/10 transition-all"
+
+                  >
+
+                    <LogOut size={16} />
+
+                    Logout
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            )}
+
+          </div>
 
         </div>
 
@@ -73,11 +213,10 @@ function ConversationList({
 
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left
 
-          ${
-            c.id === activeId
-              ? "backdrop-blur-md shadow-md border"
-              : "hover:bg-white/10"
-          }`}
+          ${c.id === activeId
+                  ? "backdrop-blur-md shadow-md border"
+                  : "hover:bg-white/10"
+                }`}
               style={c.id === activeId ? { background: 'rgba(255, 255, 255, 0.08)', borderColor: 'rgba(64, 210, 186, 0.2)' } : {}}
             >
 

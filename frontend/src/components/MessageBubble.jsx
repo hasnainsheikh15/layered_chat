@@ -1,4 +1,6 @@
-
+import {
+    useLayerMode
+} from "../context/LayerModeContext.jsx";
 import { Info } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 function MessageBubble({
@@ -10,11 +12,16 @@ function MessageBubble({
 }) {
 
     const [offsetX, setOffsetX] = useState(0);
-    const [showMeta, setShowMeta] =
-        useState(false);
+    const [showMeta, setShowMeta] = useState(false);
+    const [isRevealing, setIsRevealing] = useState(false);
+
     const popupRef = useRef(null);
 
     const startX = useRef(0);
+
+    const {
+        isLayerMode
+    } = useLayerMode();
 
     useEffect(() => {
 
@@ -106,6 +113,41 @@ function MessageBubble({
 
     };
 
+    const lastTap = useRef(0);
+
+    const handleDoubleTap = () => {
+
+        if (
+            !isLayerMode ||
+            !msg.hasHidden ||
+            isMine
+        ) {
+            return;
+        }
+
+        const now = Date.now();
+
+        if (now - lastTap.current < 300) {
+
+            setIsRevealing(true);
+
+            setTimeout(() => {
+
+                onReveal(msg);
+
+                setTimeout(() => {
+
+                    setIsRevealing(false);
+
+                }, 300);
+
+            }, 450);
+
+        }
+
+        lastTap.current = now;
+
+    };
     return (
 
         <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
@@ -154,11 +196,20 @@ function MessageBubble({
                         WebkitBackdropFilter: isMine ? "none" : "blur(10px)",
                     }}
 
-                    className={`px-4 py-2.5 rounded-2xl text-sm shadow-sm transition-transform duration-200 border
-        ${isMine
-                            ? "text-[#04342C]"
-                            : "text-white"
-                        }`}
+                    className={`px-4 py-2.5 rounded-2xl text-sm shadow-sm transition-all duration-300 border ${isRevealing
+                        ? "layer-reveal"
+                        : ""}
+
+${msg.hasHidden &&
+                            isLayerMode &&
+                            !isMine
+                            ? "hidden-layer"
+                            : ""}
+
+${isMine
+                            ? "text-white"
+                            : "bg-white/[0.03] text-white border-white/10 backdrop-blur-md"
+                        }`} onClick={handleDoubleTap}
 
                     style={{
                         transform: `translateX(${offsetX}px)`,
@@ -176,32 +227,13 @@ function MessageBubble({
 
                     </p>
 
-                    {/* hidden reveal */}
-                    {msg.hasHidden &&
-                        !isMine &&
-                        !revealedMessages[msg.id] && (
 
-                            <button
-                                onClick={() => {
-                                    onReveal(msg)
-                                }}
-                                className="mt-2 h-6 rounded-lg animate-pulse cursor-pointer backdrop-blur-sm border flex items-center justify-center text-[12px] px-3"
-                                style={{
-                                    background: "rgba(64, 210, 186, 0.15)",
-                                    borderColor: "rgba(64, 210, 186, 0.3)",
-                                    color: "#40D2BA",
-                                    fontWeight: 500
-                                }}
-                            >
-                                ✨ reveal
-                            </button>
 
-                        )}
 
                     {/* hidden content */}
                     {revealedMessages[msg.id] && (
 
-                        <div className="mt-2 text-xs px-2 py-1 rounded-md animate-fade-in" style={{ background: 'rgba(64, 210, 186, 0.1)', borderLeft: '2px solid #40D2BA', color: '#FFFFFF' }}>
+                        <div className="mt-2 text-xs text-white/90 bg-white/[0.03] border border-[#40D2BA]/10 backdrop-blur-md px-3 py-2 rounded-xl reveal-content">
 
                             {revealedMessages[msg.id]}
 

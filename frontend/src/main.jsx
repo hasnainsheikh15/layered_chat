@@ -5,9 +5,10 @@ import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { LayerModeProvider } from './context/LayerModeContext.jsx'
 import "@fontsource/poppins";
+import { ToastProvider } from './context/ToastContext.jsx'
 
 createRoot(document.getElementById('root')).render(
-
+<ToastProvider>
   <AuthProvider>
 
     <LayerModeProvider>
@@ -17,4 +18,5 @@ createRoot(document.getElementById('root')).render(
     </LayerModeProvider>
 
   </AuthProvider>
+  </ToastProvider>
 )
