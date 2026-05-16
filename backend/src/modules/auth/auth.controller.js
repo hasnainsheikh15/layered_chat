@@ -88,3 +88,19 @@ export const getMe = asyncHandler(async(req,res) => {
     }
   });
 })
+
+export const logout  = asyncHandler(async (req,res) => {
+
+    const options = {
+        httpOnly : true,
+        secure : false,
+        sameSite : "Lax",
+        maxAge : 0
+    }
+
+    return res.status(200).
+    clearCookie("token",options).
+    json(
+        new ApiResponse(200,null,"Logged out successfully")
+    )
+})

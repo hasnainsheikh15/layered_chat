@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api/axios";
-
+import { disconnectSocket } from "../socket/socket.js";
+import { useNavigate } from "react-router-dom";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -28,14 +29,31 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
-  // 🔥 logout
+  // const navigate = useNavigate();
+  //  logout
   const logout = async () => {
+
     try {
-      await api.post("/auth/logout"); // backend cookie clear karega
+
+      await api.post("/auth/logout");
+
     } catch (err) {
-      console.error(err);
+
+      console.log(err);
+
+    } finally {
+
+      disconnectSocket();
+
+      setUser(null);
+
+      sessionStorage.clear();
+
+      localStorage.clear();
+
+      window.location.href = "/";
     }
-    setUser(null);
+
   };
 
   return (

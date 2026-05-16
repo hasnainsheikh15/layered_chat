@@ -55,7 +55,8 @@ function ChatWindow({ conversation }) {
         if (isToday) {
             return d.toLocaleTimeString([], {
                 hour: "2-digit",
-                minute: "2-digit"
+                minute: "2-digit",
+                hour12 : true
             });
         }
 
